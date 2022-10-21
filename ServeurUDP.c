@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     printf("sync's working\n");
 
     bzero(buffer, 1024);
-    strcpy(buffer, strcat("SYN ACK", port2));
+    strcpy(buffer, strcat("SYN ACK", port2)); // CEST LA QUE CA FOIRE
     sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&client_addr, addr_size);
     printf("[+]Data sent: %s\n", buffer);
 
