@@ -6,15 +6,19 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 
-    if (argc != 2){
+  if (argc != 2)
+  {
     printf("Usage: %s <port>\n", argv[0]);
     exit(0);
   }
 
   char *ip = "127.0.0.1";
   int port = atoi(argv[1]);
+  int i = 5; // compteur pour ne pas avoir une boucle infinie
+  int ok;    // resultat de sendto si negative alors erreur de sendto
 
   int sockfd;
   struct sockaddr_in addr;
@@ -23,7 +27,8 @@ int main(int argc, char **argv){
   int n;
 
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sockfd < 0){
+  if (sockfd < 0)
+  {
     perror("[-]socket error");
     exit(1);
   }
@@ -33,13 +38,43 @@ int main(int argc, char **argv){
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = inet_addr(ip);
 
-  bzero(buffer,1024);
-  strcpy(buffer,"soy el cliente");
-  sendto(sockfd, buffer, 1024, 0, (struct sockaddr*)&addr, sizeof(addr));
+  // three way handshake
+  bzero(buffer, 1024);
+  strcpy(buffer, "SYN");
+  sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, sizeof(addr));
   printf("[+]Data send: %s\n", buffer);
+  printf("it's working\n");
 
   bzero(buffer, 1024);
   addr_size = sizeof(addr);
-  recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr*)&addr, &addr_size);
+  recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addr_size);
   printf("[+]Data recv: %s\n", buffer);
+  if (strcmp(buffer, "SYN ACK") == 0)
+  {
+    printf("syn ACK's working\n");
+
+    bzero(buffer, 1024);
+    strcpy(buffer, "ACK");
+    sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, sizeof(addr));
+    printf("[+]Data send: %s\n", buffer);
+
+    if (ok > 0)
+    {
+      printf("connection established\n");
+    }
+  }
+
+  while (i > 0)
+  {
+    bzero(buffer, 1024);
+    strcpy(buffer, "soy el cliente");
+    sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, sizeof(addr));
+    printf("[+]Data send: %s\n", buffer);
+
+    bzero(buffer, 1024);
+    addr_size = sizeof(addr);
+    recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addr_size);
+    printf("[+]Data recv: %s\n", buffer);
+    i--;
+  }
 }
