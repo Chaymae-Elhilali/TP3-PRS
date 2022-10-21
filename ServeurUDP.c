@@ -17,6 +17,8 @@ int main(int argc, char **argv)
 
   char *ip = "127.0.0.1";
   int port = atoi(argv[1]);
+  char port2 [1024];
+  port2="2244" // A FAIRE si on a plusieurs client il faut générer des ports disponibles 
 
   int sockfd;
   struct sockaddr_in server_addr, client_addr; // le server_addr sert pour le bind et est donc non necessaire dans le code client
@@ -53,7 +55,7 @@ int main(int argc, char **argv)
     printf("sync's working\n");
 
     bzero(buffer, 1024);
-    strcpy(buffer, "SYN ACK");
+    strcpy(buffer, strcat("SYN ACK", port2));
     sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&client_addr, addr_size);
     printf("[+]Data sent: %s\n", buffer);
 

@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   addr_size = sizeof(addr);
   recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addr_size);
   printf("[+]Data recv: %s\n", buffer);
-  if (strcmp(buffer, "SYN ACK") == 0)
+  if (strncmp(buffer, "SYN ACK", strlen("SYN ACK")) == 0)
   {
     printf("syn ACK's working\n");
 
