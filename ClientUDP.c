@@ -49,7 +49,17 @@ int main(int argc, char **argv)
   addr_size = sizeof(addr);
   recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addr_size);
   printf("[+]Data recv: %s\n", buffer);
-  if (strncmp(buffer, "SYN ACK", strlen("SYN ACK")) == 0)
+  //strcpy(&buffer[0],&buffer[1]);
+  char * token = strtok(buffer, " ");
+  printf( " %s\n", token ); //printing each token
+  token = strtok(NULL, " ");
+  printf("%s\n", token);
+  token = strtok(NULL, " ");
+  printf("%s\n", token);
+  addr.sin_port = htons(atoi(token)); //Check if it works
+  printf("%s\n", buffer);
+  printf("ok\n");
+  if (strncmp(buffer, "SYN", strlen("SYN")) == 0) //buffer became SYN (it changes after strtok)
   {
     printf("syn ACK's working\n");
 
