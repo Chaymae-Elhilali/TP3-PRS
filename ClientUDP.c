@@ -40,10 +40,9 @@ int main(int argc, char **argv)
 
   // -----------------------------création socket de communication-------------------------------------------
   int sockcom;
-  int comPort //on n'a pas encore reçu sa valeur
+  int comPort; //on n'a pas encore reçu sa valeur
   struct sockaddr_in comAddr;
   socklen_t comAddr_size;
-  int i; 
 
   sockcom = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockcom < 0)
@@ -51,9 +50,8 @@ int main(int argc, char **argv)
     perror("[-]comm socket error");
     exit(1);
   }
-  memset(&comAddr, '\0', sizeof(server_addr));
+  memset(&comAddr, '\0', sizeof(comAddr));
   comAddr.sin_family = AF_INET;
-  comAddr.sin_port = htons(comPort);
   comAddr.sin_addr.s_addr = inet_addr(ip);
 
   // ------------------------------ three way handshake-------------------------------------------
@@ -91,19 +89,20 @@ int main(int argc, char **argv)
       printf("connection established\n");
     }
   }
-  
+
  //------------------------------------COMMUNICATION-----------------------------------------
   while (i > 0)
   {
     bzero(buffer, 1024);
     strcpy(buffer, "soy el cliente");
-    sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, sizeof(addr));
+    sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, sizeof(comAddr));
     printf("[+]Data send: %s\n", buffer);
 
     bzero(buffer, 1024);
-    addr_size = sizeof(addr);
-    recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, &addr_size);
+    comAddr_size = sizeof(comAddr);
+    recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, &comAddr_size);
     printf("[+]Data recv: %s\n", buffer);
     i--;
   }
+  printf("WE'VE DONE IT !!!! \n");
 }
