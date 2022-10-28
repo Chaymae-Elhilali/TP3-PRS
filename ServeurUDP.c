@@ -106,7 +106,8 @@ int main(int argc, char **argv)
   }
 
  //------------------------------------COMMUNICATION-----------------------------------------
-  while (1)
+  int k = 5;
+  while (k>0)
   {
     bzero(buffer, 1024);
     addr_size = sizeof(client_addr);
@@ -117,5 +118,41 @@ int main(int argc, char **argv)
     strcpy(buffer, "Welcome to the UDP Server.");
     sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, comAddr_size);
     printf("[+]Data sent: %s\n", buffer);;
+    k--;
   }
+/**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
+  FILE *fp;
+  char *filename= "client.txt";
+  void send_file_data(FILE *fp, int sockcom, struct sockaddr_in comAddr){
+    int n;
+    char buffer[1024];
+
+    while(fgets(buffer, 1024, fp)!= NULL){
+      printf("[sending] Data: %s", buffer);
+      n = sendto(sockcom, (char*)buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr_size));
+      printf("n:%d\n", n);
+      if (n == -1)
+      {
+        perror("[ERROR] sending data to the client.");
+        exit(1);
+      }
+      bzero(buffer, 1024);
+    }
+    strcpy(buffer, "END");
+    sendto(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr_size));
+
+    fclose(fp);
+    return;
+
+  }
+
+  fp= fopen(filename,"r");
+  if (fp==NULL){
+    perror("ERROR reading the file\n");
+    exit(1);
+  }
+  send_file_data(fp,sockcom, comAddr);
+  printf("[SUCCESS] Data transfer complete.\n");
+  printf("[CLOSING] Disconnecting from the server.\n");
+  //close(sockcom);
 }

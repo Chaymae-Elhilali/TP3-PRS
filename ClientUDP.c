@@ -105,4 +105,44 @@ int main(int argc, char **argv)
     i--;
   }
   printf("WE'VE DONE IT !!!! \n");
+  
+/**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
+  void write_file(int sockcom, struct sockaddr_in comAddr){
+    
+    char* filename = "client.txt";
+    int n;
+    char buffer[1024];
+    socklen_t Addr_size;
+
+    // Creating a file.
+    FILE* fp = fp = fopen(filename, "w");
+
+    // Receiving the data and writing it into the file.
+    while (1)
+    {
+      addr_size = sizeof(comAddr);
+      n = recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, &comAddr_size);
+
+      if (strcmp(buffer, "END") == 0)
+      {
+        break;
+      }
+
+      printf("[RECEVING] Data: %s", buffer);
+      fprintf(fp, "%s", buffer);
+      bzero(buffer, 1024);
+    }
+
+    fclose(fp);
+    return;
+  }
+
+
+  printf("[STARTING] UDP File Server started. \n");
+  write_file(sockcom, comAddr);
+
+  printf("[SUCCESS] Data transfer complete.\n");
+  printf("[CLOSING] Closing the server.\n");
+
+  //close(sockcom);
 }
