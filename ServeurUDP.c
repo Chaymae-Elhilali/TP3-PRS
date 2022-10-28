@@ -142,7 +142,6 @@ int main(int argc, char **argv)
     sendto(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr_size));
 
     fclose(fp);
-    return;
 
   }
 
@@ -155,4 +154,5 @@ int main(int argc, char **argv)
   printf("[SUCCESS] Data transfer complete.\n");
   printf("[CLOSING] Disconnecting from the server.\n");
   //close(sockcom);
+  return 0;
 }
