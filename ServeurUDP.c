@@ -22,6 +22,8 @@ int main(int argc, char **argv)
   strcpy(src,  " 8282");// A FAIRE: si on a plusieurs client il faut générer des ports disponibles random
   strcpy(dest, "SYN ACK"); 
 
+  // -----------------------------création socket de three way handshake-------------------------------------------
+
   int sockfd;
   struct sockaddr_in server_addr, client_addr; // le server_addr sert pour le bind et est donc non necessaire dans le code client
   char buffer[1024];
@@ -47,7 +49,33 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  // three way handshake
+  // -----------------------------création socket de communication-------------------------------------------
+  int sockcom;
+  int comPort= atoi(src);
+  printf("comm port %d\n", comPort);
+  struct sockaddr_in comAddr;
+  socklen_t comAddr_size;
+  int i; // vérifie le fctionnement du bind
+
+  sockcom = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockcom < 0)
+  {
+    perror("[-]comm socket error");
+    exit(1);
+  }
+  memset(&comAddr, '\0', sizeof(server_addr));
+  comAddr.sin_family = AF_INET;
+  comAddr.sin_port = htons(comPort);
+  comAddr.sin_addr.s_addr = inet_addr(ip);
+
+  i = bind(sockcom, (struct sockaddr *)&comAddr, sizeof(comAddr));
+  if (i < 0)
+  {
+    perror("[-]bind error");
+    exit(1);
+  }
+
+  // -----------------------------three way handshake-------------------------------------------
   bzero(buffer, 1024);
   addr_size = sizeof(client_addr);
   recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr *)&client_addr, &addr_size);
@@ -76,7 +104,8 @@ int main(int argc, char **argv)
     printf("sync isn't working\n");
     exit(-1);
   }
-
+  
+ //------------------------------------COMMUNICATION-----------------------------------------
   while (1)
   {
     bzero(buffer, 1024);

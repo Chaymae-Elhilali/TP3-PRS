@@ -38,7 +38,25 @@ int main(int argc, char **argv)
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = inet_addr(ip);
 
-  // three way handshake
+  // -----------------------------création socket de communication-------------------------------------------
+  int sockcom;
+  int comPort //on n'a pas encore reçu sa valeur
+  struct sockaddr_in comAddr;
+  socklen_t comAddr_size;
+  int i; 
+
+  sockcom = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sockcom < 0)
+  {
+    perror("[-]comm socket error");
+    exit(1);
+  }
+  memset(&comAddr, '\0', sizeof(server_addr));
+  comAddr.sin_family = AF_INET;
+  comAddr.sin_port = htons(comPort);
+  comAddr.sin_addr.s_addr = inet_addr(ip);
+
+  // ------------------------------ three way handshake-------------------------------------------
   bzero(buffer, 1024);
   strcpy(buffer, "SYN");
   sendto(sockfd, buffer, 1024, 0, (struct sockaddr *)&addr, sizeof(addr));
@@ -56,7 +74,7 @@ int main(int argc, char **argv)
   printf("%s\n", token);
   token = strtok(NULL, " ");
   printf("%s\n", token);
-  addr.sin_port = htons(atoi(token)); //Check if it works
+  comAddr.sin_port = htons(atoi(token)); //Check if it works
   printf("%s\n", buffer);
   printf("ok\n");
   if (strncmp(buffer, "SYN", strlen("SYN")) == 0) //buffer became SYN (it changes after strtok)
@@ -73,7 +91,8 @@ int main(int argc, char **argv)
       printf("connection established\n");
     }
   }
-
+  
+ //------------------------------------COMMUNICATION-----------------------------------------
   while (i > 0)
   {
     bzero(buffer, 1024);
