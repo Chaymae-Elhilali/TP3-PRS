@@ -111,8 +111,8 @@ int main(int argc, char **argv)
     
     char* filename = "client.txt";
     int n;
-    char buffer[1024];
-    socklen_t Addr_size;
+    char buff[1024];
+    socklen_t comAddr_size;
 
     // Creating a file.
     FILE* fp = fp = fopen(filename, "w");
@@ -120,20 +120,20 @@ int main(int argc, char **argv)
     // Receiving the data and writing it into the file.
     while (1)
     {
-      addr_size = sizeof(comAddr);
-      n = recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, &comAddr_size);
+      comAddr_size = sizeof(comAddr);
+      n = recvfrom(sockcom, buff, 1024, 0, (struct sockaddr*)&comAddr, &comAddr_size);
 
       if (strcmp(buffer, "END") == 0)
       {
         break;
       }
 
-      printf("[RECEVING] Data: %s", buffer);
-      fprintf(fp, "%s", buffer);
-      bzero(buffer, 1024);
+      printf("[RECEVING] Data: %s", buff);
+      fprintf(fp, "%s", buff);
+      bzero(buff, 1024);
     }
 
-    fclose(fp);
+    //fclose(fp);
   }
 
 

@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   memset(&server_addr, '\0', sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(port);
-  server_addr.sin_addr.s_addr = inet_addr(ip);
+  server_addr.sin_addr.s_addr = INADDR_ANY;
 
   n = bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
   if (n < 0)
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   memset(&comAddr, '\0', sizeof(server_addr));
   comAddr.sin_family = AF_INET;
   comAddr.sin_port = htons(comPort);
-  comAddr.sin_addr.s_addr = inet_addr(ip);
+  comAddr.sin_addr.s_addr = INADDR_ANY;
 
   i = bind(sockcom, (struct sockaddr *)&comAddr, sizeof(comAddr));
   if (i < 0)
@@ -116,20 +116,20 @@ int main(int argc, char **argv)
 
     bzero(buffer, 1024);
     strcpy(buffer, "Welcome to the UDP Server.");
-    sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, comAddr_size);
+    sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, comAddr_size); // on peut dans ce cas utiliser la m structure car c'est une reponse à sa précédente utilisation
     printf("[+]Data sent: %s\n", buffer);;
     k--;
   }
 /**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
   FILE *fp;
-  char *filename= "client.txt";
+  char *filename= "serveur.txt";
   void send_file_data(FILE *fp, int sockcom, struct sockaddr_in comAddr){
     int n;
     char buffer[1024];
 
-    while(fgets(buffer, 1024, fp)!= NULL){
+    while(fgets(buffer, 1024, fp)!= NULL){ //fread
       printf("[sending] Data: %s", buffer);
-      n = sendto(sockcom, (char*)buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr_size));
+      n = sendto(sockcom, (char*)buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr)); // A FAIRE utiliser une nouvelle structure à la place de comAddr car deja utilisée ou bien la memset et y remettre les bonnes valeurs
       printf("n:%d\n", n);
       if (n == -1)
       {
@@ -139,9 +139,9 @@ int main(int argc, char **argv)
       bzero(buffer, 1024);
     }
     strcpy(buffer, "END");
-    sendto(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr_size));
+    sendto(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
 
-    fclose(fp);
+    //fclose(fp);
 
   }
 
