@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     perror("[-]comm socket error");
     exit(1);
   }
-  memset(&comAddr, '\0', sizeof(server_addr));
+  memset(&comAddr, '\0', sizeof(comAddr));
   comAddr.sin_family = AF_INET;
   comAddr.sin_port = htons(comPort);
   comAddr.sin_addr.s_addr = INADDR_ANY;
@@ -120,39 +120,40 @@ int main(int argc, char **argv)
     printf("[+]Data sent: %s\n", buffer);;
     k--;
   }
-/**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
+  /**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
   FILE *fp;
   char *filename= "serveur.txt";
-  void send_file_data(FILE *fp, int sockcom, struct sockaddr_in comAddr){
-    int n;
-    char buffer[1024];
-
-    while(fgets(buffer, 1024, fp)!= NULL){ //fread
-      printf("[sending] Data: %s", buffer);
-      n = sendto(sockcom, (char*)buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr)); // A FAIRE utiliser une nouvelle structure à la place de comAddr car deja utilisée ou bien la memset et y remettre les bonnes valeurs
-      printf("n:%d\n", n);
-      if (n == -1)
-      {
-        perror("[ERROR] sending data to the client.");
-        exit(1);
-      }
-      bzero(buffer, 1024);
-    }
-    strcpy(buffer, "END");
-    sendto(sockcom, buffer, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
-
-    //fclose(fp);
-
-  }
-
   fp= fopen(filename,"r");
   if (fp==NULL){
     perror("ERROR reading the file\n");
     exit(1);
   }
-  send_file_data(fp,sockcom, comAddr);
+  char bufferFichier[1024];
+  int block_size=1;
+
+  block_size= fread(bufferFichier,1024,block_size,fp);
+  void *p = bufferFichier;
+  memset(&comAddr, '\0', sizeof(comAddr));
+
+  while (block_size > 0) {
+    n = sendto(sockcom, (char*)bufferFichier, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr)); // EN COURS utiliser une nouvelle structure à la place de comAddr car deja utilisée ou bien la memset et y remettre les bonnes valeurs
+    if (n == -1){
+      perror("[ERROR] sending data to the client.");
+      exit(1);
+    }
+
+    block_size -= bytes_written;
+    p += bytes_written;
+    bzero(bufferFichier, 1024);
+  }
+  strcpy(bufferFichier, "END");
+  sendto(sockcom, bufferFichier, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
+
+    //fclose(fp);
+
+
   printf("[SUCCESS] Data transfer complete.\n");
-  printf("[CLOSING] Disconnecting from the server.\n");
+  printf("[CLOSING] Disconnecting .\n");
   //close(sockcom);
   return 0;
 }
