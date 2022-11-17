@@ -167,7 +167,22 @@ int main(int argc, char **argv)
   //close(sockcom);
 
 
-    //------------------------------------IMPLEMENTATIONS-----------------------------------------
+    //------------------------------------IMPLEMENTATIONS----------------------------------------- 
+    //A FAIRE (c juste du pseudo code )
+    while(1){
+      for (i, j){ //fenêtre d'envoi
+        sendto()
+        recvfrom() //on le surveille avec select pour : si on reçoit ack on décale la fenêtre || si timeout on réenvoit
+      }
+      if(ack){
+        >ancien ack: on déplace la fenetre
+        <ancien ack: on ne fait rien c juste un retard
+
+      }
+      si on reçoit mm ack plusieurs fois: congestion avoidance
+
+      break si n° ack==n° fichier
+    }
 
   return 0;
 }

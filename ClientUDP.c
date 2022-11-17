@@ -131,7 +131,9 @@ int main(int argc, char **argv)
     if (strcmp(buffer, "END") == 0)  {
       break;
     }
-
+    fwrite() // A FAIRE etape 1: write ce qu'on reçoit sur un NOUVEAU FICHIER 
+    //A FAIRE 2: essayer avec des pdfs c important
+    // A FAIRE etape 3: rajouter les acks et numéros de segments 
     printf("[RECEVING] Data: %s", buff);
     fprintf(fp, "%s", buff);
     bzero(buff, 1024);
