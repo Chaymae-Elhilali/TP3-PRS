@@ -121,6 +121,7 @@ int main(int argc, char **argv)
     k--;
   }
   /**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
+  int i=0;
   FILE *fp;
   char *filename= "serveur.txt";
   fp= fopen(filename,"r");
@@ -131,20 +132,21 @@ int main(int argc, char **argv)
   char bufferFichier[1024];
   int block_size=1;
 
-  block_size= fread(bufferFichier,1024,block_size,fp);
+  //block_size= fread(bufferFichier,1024,block_size,fp); etape d'après
   void *p = bufferFichier;
   memset(&comAddr, '\0', sizeof(comAddr));
+  int count=1024;
 
-  while (block_size > 0) {
-    n = sendto(sockcom, (char*)bufferFichier, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr)); // EN COURS utiliser une nouvelle structure à la place de comAddr car deja utilisée ou bien la memset et y remettre les bonnes valeurs
+  while (count==1024) { 
+    count=fread(bufferFichier, 1024, 1, fp+i); //nbre be bytes lus: est inf a 1024 si on finit
+
+    n = sendto(sockcom, (char*)bufferFichier, count, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
     if (n == -1){
       perror("[ERROR] sending data to the client.");
       exit(1);
     }
-
-    block_size -= bytes_written;
-    p += bytes_written;
-    bzero(bufferFichier, 1024);
+    i += 1024;
+    //A FAIRE il faut rajouter le ACK
   }
   strcpy(bufferFichier, "END");
   sendto(sockcom, bufferFichier, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
