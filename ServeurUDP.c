@@ -106,7 +106,8 @@ int main(int argc, char **argv)
   }
 
  //------------------------------------COMMUNICATION-----------------------------------------
-  int k = 5;
+  int k = 1;
+  int res;
   while (k>0)
   {
     bzero(buffer, 1024);
@@ -116,12 +117,18 @@ int main(int argc, char **argv)
 
     bzero(buffer, 1024);
     strcpy(buffer, "Welcome to the UDP Server.");
-    sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, comAddr_size); // on peut dans ce cas utiliser la m structure car c'est une reponse à sa précédente utilisation
+    res=sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, comAddr_size); // on peut dans ce cas utiliser la m structure car c'est une reponse à sa précédente utilisation
+    if (res<0){
+      perror("erreur d'envoi");
+      exit(-1);
+    }
     printf("[+]Data sent: %s\n", buffer);;
     k--;
+    
   }
-  /**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
-  int i=0;
+
+  //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
+  int nerrno; //résultat de sendto; =-1 si erreur
   FILE *fp;
   char *filename= "serveur.txt";
   fp= fopen(filename,"r");
@@ -134,28 +141,33 @@ int main(int argc, char **argv)
 
   //block_size= fread(bufferFichier,1024,block_size,fp); etape d'après
   void *p = bufferFichier;
-  memset(&comAddr, '\0', sizeof(comAddr));
   int count=1024;
 
-  while (count==1024) { 
-    count=fread(bufferFichier, 1024, 1, fp+i); //nbre be bytes lus: est inf a 1024 si on finit
+  while (!feof(fp)) { //ntant qu'on n'est pas à la fin du fichier
+    count=fread(bufferFichier, 1, 1024, fp); 
+    printf("count: %d\n", count);
 
-    n = sendto(sockcom, (char*)bufferFichier, count, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
-    if (n == -1){
+    nerrno = sendto(sockcom, (char*)bufferFichier, count, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
+    printf("sendto returns: %d\n", nerrno);
+    if (nerrno == -1){
       perror("[ERROR] sending data to the client.");
       exit(1);
     }
-    i += 1024;
+    
     //A FAIRE il faut rajouter le ACK
   }
+
   strcpy(bufferFichier, "END");
   sendto(sockcom, bufferFichier, 1024, 0, (struct sockaddr*)&comAddr, sizeof(comAddr));
-
     //fclose(fp);
 
 
   printf("[SUCCESS] Data transfer complete.\n");
   printf("[CLOSING] Disconnecting .\n");
   //close(sockcom);
+
+
+    //------------------------------------IMPLEMENTATIONS-----------------------------------------
+
   return 0;
 }

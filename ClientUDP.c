@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 
   char *ip = "127.0.0.1";
   int port = atoi(argv[1]);
-  int i = 5; // compteur pour ne pas avoir une boucle infinie
+  int i = 1; // compteur pour ne pas avoir une boucle infinie
   int ok;    // resultat de sendto si negative alors erreur de sendto
 
   int sockfd;
@@ -42,7 +42,11 @@ int main(int argc, char **argv)
   int sockcom;
   int comPort; //on n'a pas encore reçu sa valeur
   struct sockaddr_in comAddr;
+  struct sockaddr_in vAddr; //j'ai juste besoin d'une structure vide dans mon transfert de fichier
   socklen_t comAddr_size;
+
+  socklen_t vAddr_size;
+  memset(&vAddr, '\0', sizeof(vAddr));
 
   sockcom = socket(AF_INET, SOCK_DGRAM, 0);
   if (sockcom < 0)
@@ -94,54 +98,50 @@ int main(int argc, char **argv)
   while (i > 0)
   {
     bzero(buffer, 1024);
-    strcpy(buffer, "soy el cliente");
+    strcpy(buffer, "hello, I'm the client");
     sendto(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, sizeof(comAddr));
     printf("[+]Data send: %s\n", buffer);
 
     bzero(buffer, 1024);
     comAddr_size = sizeof(comAddr);
-    recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr *)&comAddr, &comAddr_size);
+    //recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr *)&vAddr, sizeof(vAddr));
+    recvfrom(sockcom, buffer, 1024, 0, (struct sockaddr *)&vAddr, (socklen_t *restrict) sizeof(vAddr)); //needed cast otherwise it's an int
     printf("[+]Data recv: %s\n", buffer);
     i--;
   }
-  printf("WE'VE DONE IT !!!! \n");
+  printf("[SUCCESS] Regular text communication \n");
   
 /**/ //------------------------------------TRANSFERT DE FICHIERS-----------------------------------------
-  void write_file(int sockcom, struct sockaddr_in comAddr){
-    
-    char* filename = "client.txt";
-    int n;
-    char buff[1024];
-    socklen_t comAddr_size;
+  
+  printf("[STARTING] UDP File transfer started. \n");
 
-    // Creating a file.
-    FILE* fp = fp = fopen(filename, "w");
+  char* filename = "client.txt";
+  char buff[1024];
+  memset(buff, '\0', sizeof(buff));
+  memset(&vAddr, '\0', sizeof(vAddr));
+  int nerrno; //résultat de Rrecvfrom; =-1 si erreur
 
-    // Receiving the data and writing it into the file.
-    while (1)
-    {
-      comAddr_size = sizeof(comAddr);
-      n = recvfrom(sockcom, buff, 1024, 0, (struct sockaddr*)&comAddr, &comAddr_size);
+  // Creating a file.
+  FILE* fp = fp = fopen(filename, "w");
 
-      if (strcmp(buffer, "END") == 0)
-      {
-        break;
-      }
-
-      printf("[RECEVING] Data: %s", buff);
-      fprintf(fp, "%s", buff);
-      bzero(buff, 1024);
+  // Receiving the data and writing it into the file.
+  while (1){
+    nerrno = recvfrom(sockcom, buff, 1024, 0, (struct sockaddr*)&vAddr, (socklen_t *restrict) sizeof(vAddr));
+    printf("recvfrom returns: %d\n", nerrno);
+    if (strcmp(buffer, "END") == 0)  {
+      break;
     }
 
-    //fclose(fp);
+    printf("[RECEVING] Data: %s", buff);
+    fprintf(fp, "%s", buff);
+    bzero(buff, 1024);
   }
 
-
-  printf("[STARTING] UDP File Server started. \n");
-  write_file(sockcom, comAddr);
+  //fclose(fp);
+  
 
   printf("[SUCCESS] Data transfer complete.\n");
-  printf("[CLOSING] Closing the server.\n");
+  printf("[CLOSING] Closing.\n");
 
   //close(sockcom);
 }
